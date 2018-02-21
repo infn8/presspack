@@ -3,22 +3,22 @@ services:
   db:
     image: mysql:5.7
     volumes:
-      - "./.data/db:/var/lib/mysql"
+      - "${MYSQL_DATA_PATH:-./.data/db}:/var/lib/mysql"
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: wordpress
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wordpress
-      MYSQL_PASSWORD: wordpress
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-wordpress}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-wordpress}
+      MYSQL_USER: ${MYSQL_USER:-wordpress}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-wordpress}
 
   wordpress:
     depends_on:
       - db
     image: wordpress:4.7.5-apache
     volumes:
-      - ".:/var/www/html/wp-content/themes/presspack"
-      - "./wp-content/plugins:/var/www/html/wp-content/plugins"
-      - "./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini"
+      - "${THEME_PATH:-.}:/var/www/html/wp-content/themes/${THEME_NAME:-presspack}"
+      - "${PLUGINS_PATH:-./wp-content/plugins}:/var/www/html/wp-content/plugins"
+      - "${UPLOADS_INI:-./uploads.ini}:/usr/local/etc/php/conf.d/uploads.ini"
     links:
       - db
     ports:
@@ -26,4 +26,4 @@ services:
     restart: always
     environment:
       WORDPRESS_DB_HOST: db:3306
-      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_PASSWORD: $MYSQL_ROOT_PASSWORD
